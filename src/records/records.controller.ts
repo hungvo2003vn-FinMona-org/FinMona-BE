@@ -3,7 +3,7 @@ import { RecordsService } from './records.service';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { UpdateRecordDto } from './dto/update-record.dto';
 import RecordResponseDTO from './dto/record.response.dto';
-import { ApiBadRequestResponse, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Records')
@@ -21,6 +21,7 @@ export class RecordsController {
   @UseGuards(AuthGuard())
   @ApiCreatedResponse({ description: 'Record created successfully' })
   @ApiBadRequestResponse({ description: 'Error while creating record' })
+  @ApiBearerAuth('JWT-auth')
   createNewRecord(@Param('id') id:string, @Body() createRecordDto: CreateRecordDto): Promise<any> {
     return this.recordsService.addNewRecordWithUserInfo(id, createRecordDto);
   }
@@ -29,6 +30,7 @@ export class RecordsController {
   @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'successful' })
   @ApiBadRequestResponse({ description: 'Error fetching records' })
+  @ApiBearerAuth('JWT-auth')
   findAllRecords(): Promise<Array<RecordResponseDTO>> {
     return this.recordsService.findAllRecord();
   }
@@ -37,6 +39,7 @@ export class RecordsController {
   @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'successful' })
   @ApiBadRequestResponse({ description: 'Error fetching record' })
+  @ApiBearerAuth('JWT-auth')
   findAllRecordsByUserId(@Param('id') id: string): Promise<Array<RecordResponseDTO>> {
     return this.recordsService.findAllRecordByUserId(id);
   }
@@ -45,6 +48,7 @@ export class RecordsController {
   @UseGuards(AuthGuard())
   @ApiCreatedResponse({ description: 'Record updated successfully' })
   @ApiBadRequestResponse({ description: 'Error updating record' })
+  @ApiBearerAuth('JWT-auth')
   updateRecordById(@Param('id') id: string, @Body() requestDto: UpdateRecordDto): Promise<any> {
     return this.recordsService.updateRecord(id, requestDto);
   }
@@ -53,6 +57,7 @@ export class RecordsController {
   @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'Record deleted' })
   @ApiBadRequestResponse({ description: 'Error deleting record' })
+  @ApiBearerAuth('JWT-auth')
   deleteTag(@Param('id') id:string): Promise<any> {
     return this.recordsService.deleteRecord(id);
   }

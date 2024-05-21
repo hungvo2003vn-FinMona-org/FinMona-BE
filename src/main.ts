@@ -15,6 +15,17 @@ async function bootstrap() {
   .setTitle('Test Swagger')
   .setDescription('API test before implement it')
   .setVersion('1.0')
+  .addBearerAuth(
+    {
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      name: 'JWT',
+      description: 'Enter JWT token',
+      in: 'header',
+    },
+    'JWT-auth',
+  )
   .build();
 
 
