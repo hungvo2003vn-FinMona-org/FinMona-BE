@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import UserResponseDTO from './dto/user.response.dto';
 import { ApiCreatedResponse, ApiOkResponse, ApiResponse, ApiTags, ApiBadRequestResponse, ApiHeader } from '@nestjs/swagger';
+import { LoginUserDto } from './dto/login-user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Users')
 @Controller('users')
@@ -12,13 +14,20 @@ export class UsersController {
 
 
   @Get()
+  @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'successful' })
   @ApiBadRequestResponse({ description: 'Error fetching users' })
   findAllUser(): Promise<Array<UserResponseDTO>> {
     return this.usersService.findAllUsers();
   }
 
+  @Get('/login')
+  login(@Body() requestDto: LoginUserDto): Promise<{ token: string }> {
+    return this.usersService.signIn(requestDto);
+  }
+
   @Get(':id')
+  @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'successful' })
   @ApiBadRequestResponse({ description: 'Error fetching user' })
   getUserById(@Param('id') id: string): Promise<UserResponseDTO> {
@@ -33,6 +42,7 @@ export class UsersController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard())
   @ApiCreatedResponse({ description: 'User updated successfully' })
   @ApiBadRequestResponse({ description: 'Error updating user' })
   updateUser(@Param('id') id: string, @Body() requestDTO: UpdateUserDto): Promise<any> {
@@ -40,6 +50,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'User deleted' })
   @ApiBadRequestResponse({ description: 'Error deleting user' })
   deleteUser(@Param('id') id:string): Promise<any> {

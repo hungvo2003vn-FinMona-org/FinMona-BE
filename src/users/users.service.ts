@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -6,6 +6,10 @@ import { UserDocument } from './entities/user.entity';
 import UserResponseDTO from './dto/user.response.dto';
 import { Model, Types } from 'mongoose';
 import { RecordDocument } from 'src/records/entities/record.entity';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { TokensService } from 'src/tokens/tokens.service';
+import { CreateTokenDto } from 'src/tokens/dto/create-token.dto';
 
 @Injectable()
 export class UsersService {
@@ -13,16 +17,79 @@ export class UsersService {
 
   constructor(
     @InjectModel('User') private userModel: Model<UserDocument>,
-    @InjectModel('Record') private recordModel: Model<RecordDocument>
+    @InjectModel('Record') private recordModel: Model<RecordDocument>,
+    private jwtService: JwtService,
+    private tokenService: TokensService
   ) {}
+
+  async signIn(requestDTO: LoginUserDto): Promise<{ token: string }> {
+    const { email, password } = requestDTO;
+
+    const user = await this.userModel.findOne({ email: email, password: password });
+    
+    if (!user) {
+      throw new UnauthorizedException("Invalid email or password")
+    }
+    
+    let { token, expiredAt } = await this.tokenService.checkIfUserHasToken(user._id.toString());
+
+    var current = new Date();
+    // console.log(a);
+    // console.log(a > expiredAt);
+
+    if (token) {
+      if(current < expiredAt) {
+        return { token };
+      } else {
+        const tryDelete = await this.tokenService.deleteToken(token);
+        if (tryDelete) {
+          token = this.jwtService.sign({ id: user._id });
+          var date = new Date();
+          date.setDate(date.getDate() + 3); // 3 days
+          const tmp = await this.tokenService.saveToken(
+            {
+              token: token,
+              expiredAt: date,
+              user: user
+            }
+          );
+          return { token };
+        } 
+      }
+    } else { 
+      token = this.jwtService.sign({ id: user._id });
+      var date = new Date();
+      date.setDate(date.getDate() + 3); // 3 days
+      const tmp = await this.tokenService.saveToken(
+        {
+          token: token,
+          expiredAt: date,
+          user: user
+        }
+      );
+      return { token };
+     }
+  }
 
   async addUser(requestDTO: CreateUserDto): Promise<any> {
     try {
+      const emailIsValidOrNot = await this.userModel.find({ email: requestDTO.email });
+      if (emailIsValidOrNot.length != 0) {
+        return {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Email has been used'
+        };
+      }
       const newUser = new this.userModel();
       newUser.name = requestDTO.name;
       newUser.email = requestDTO.email;
       newUser.password = requestDTO.password;
-      newUser.avatar = requestDTO.avatar;
+      if (!(requestDTO.avatar === undefined)) {
+        newUser.avatar = requestDTO.avatar;
+      } else {
+        newUser.avatar = "default";
+      }
+
 
       const user = await newUser.save();
       return {
@@ -81,7 +148,7 @@ export class UsersService {
       const userDeleted = await this.userModel.findByIdAndDelete(_id).exec();
       return {
         statusCode: HttpStatus.OK,
-        message: 'User $userDeleted.name deleted'
+        message: `User ${userDeleted.name} deleted`
       }
     } catch (error) {
       throw new HttpException('Error deleting user', HttpStatus.BAD_REQUEST);

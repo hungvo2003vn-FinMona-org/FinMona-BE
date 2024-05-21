@@ -20,9 +20,6 @@ export class User {
     @Prop({ type: String })
     avatar: string;
 
-    @Prop({ type: [{ type: Types.ObjectId }] })
-    records: Array<RecordDocument>;
-
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

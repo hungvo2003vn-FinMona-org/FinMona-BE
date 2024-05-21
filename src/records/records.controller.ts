@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { UpdateRecordDto } from './dto/update-record.dto';
 import RecordResponseDTO from './dto/record.response.dto';
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Records')
 @Controller('records')
@@ -17,6 +18,7 @@ export class RecordsController {
 
 
   @Post(':id/createRecord')
+  @UseGuards(AuthGuard())
   @ApiCreatedResponse({ description: 'Record created successfully' })
   @ApiBadRequestResponse({ description: 'Error while creating record' })
   createNewRecord(@Param('id') id:string, @Body() createRecordDto: CreateRecordDto): Promise<any> {
@@ -24,6 +26,7 @@ export class RecordsController {
   }
 
   @Get()
+  @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'successful' })
   @ApiBadRequestResponse({ description: 'Error fetching records' })
   findAllRecords(): Promise<Array<RecordResponseDTO>> {
@@ -31,6 +34,7 @@ export class RecordsController {
   }
 
   @Get(':id/getRecord')
+  @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'successful' })
   @ApiBadRequestResponse({ description: 'Error fetching record' })
   findAllRecordsByUserId(@Param('id') id: string): Promise<Array<RecordResponseDTO>> {
@@ -38,6 +42,7 @@ export class RecordsController {
   }
 
   @Put(':id')
+  @UseGuards(AuthGuard())
   @ApiCreatedResponse({ description: 'Record updated successfully' })
   @ApiBadRequestResponse({ description: 'Error updating record' })
   updateRecordById(@Param('id') id: string, @Body() requestDto: UpdateRecordDto): Promise<any> {
@@ -45,6 +50,7 @@ export class RecordsController {
   }
 
   @Delete(':id')
+  @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'Record deleted' })
   @ApiBadRequestResponse({ description: 'Error deleting record' })
   deleteTag(@Param('id') id:string): Promise<any> {

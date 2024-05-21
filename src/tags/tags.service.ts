@@ -3,18 +3,20 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { TagDocument } from './entities/tag.entity';
+import { Tag, TagDocument } from './entities/tag.entity';
 import { TagResponseDTO } from './dto/tag.response.dto';
+import { UserDocument } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class TagsService {
   private readonly logger = new Logger(TagsService.name);
 
   constructor(
-    @InjectModel('Tag') private tagModel: Model<TagDocument>
+    @InjectModel('Tag') private tagModel: Model<TagDocument>,
+    @InjectModel('User') private userModel: Model<UserDocument>
   ) {}
 
-  async addTag(requestDTO: CreateTagDto): Promise<any> {
+  async addDefaultTag(requestDTO: CreateTagDto): Promise<any> {
     try {
       const newTag = new this.tagModel();
       newTag.icon = requestDTO.icon;
@@ -29,6 +31,7 @@ export class TagsService {
           )
         }
       }
+      newTag.isDefault = true;
       const tag = newTag.save();
       return {
         statusCode: HttpStatus.CREATED,
@@ -39,6 +42,49 @@ export class TagsService {
         'Error while creating new tag',
         HttpStatus.BAD_REQUEST,
       )
+    }
+  }
+
+
+  async addUserTag(id: string, requestDTO: CreateTagDto): Promise<any> {
+    try {
+      const newTag = new this.tagModel();
+      newTag.icon = requestDTO.icon;
+      newTag.title = requestDTO.title;
+      newTag.type = requestDTO.type;
+
+      newTag.isDefault = false;
+      const _userId = new Types.ObjectId(id);
+      const user = await this.userModel.findById(_userId).exec();
+      newTag.user = user;
+
+      newTag.save();
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Record created successfully'
+      };
+    } catch (error) {
+      throw new HttpException('Error creating new tags', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async findDefaultTag(): Promise<Array<TagResponseDTO>> {
+    try {
+      const tags = await this.tagModel.find({ isDefault: true });
+      return tags.map(TagResponseDTO.from);
+    } catch (error) {
+      throw new HttpException('Error fetching Tags', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async findUserTag( id: string ): Promise<Array<TagResponseDTO>> {
+    try {
+      const _userId = new Types.ObjectId(id);
+      const tags = await this.tagModel.find({ $or: [{isDefault: true}, {user: _userId}] });
+      return tags.map(TagResponseDTO.from);
+    } catch (error) {
+      throw new HttpException('Error fetching Tags', HttpStatus.BAD_REQUEST);
     }
   }
 
