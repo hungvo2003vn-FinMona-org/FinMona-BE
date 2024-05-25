@@ -45,17 +45,29 @@ export class RecordsController {
   }
 
   @Get(':id/getRecordByDate')
+  @UseGuards(AuthGuard())
+  @ApiOkResponse({ description: 'successful' })
+  @ApiBadRequestResponse({ description: 'Error fetching record' })
+  @ApiBearerAuth('JWT-auth')
   findRecordByDate(@Param('id') id: string, @Query('startDate') startDate: string, @Query('endDate') endDate: string): Promise<Array<RecordResponseDTO>> {
     return this.recordsService.filterRecordsByTime(id, startDate, endDate);
   }
 
   @Get(':id/getRecordByCategory')
+  @UseGuards(AuthGuard())
+  @ApiOkResponse({ description: 'successful' })
+  @ApiBadRequestResponse({ description: 'Error fetching record' })
+  @ApiBearerAuth('JWT-auth')
   findRecordByCategory(@Param('id') id: string, @Query('categoryName') categoryName: string): Promise<Array<RecordResponseDTO>> {
     console.log(categoryName);
     return this.recordsService.filterRecordsByCategory(id, categoryName);
   }
 
   @Get(':id/getRecordByMoneySource')
+  @UseGuards(AuthGuard())
+  @ApiOkResponse({ description: 'successful' })
+  @ApiBadRequestResponse({ description: 'Error fetching record' })
+  @ApiBearerAuth('JWT-auth')
   findRecordByMoneySource(@Param('id') id: string, @Query('moneySourceName') moneySourceName: string): Promise<Array<RecordResponseDTO>> {
     console.log(moneySourceName);
     return this.recordsService.filterRecordsByMoneySource(id, moneySourceName);
