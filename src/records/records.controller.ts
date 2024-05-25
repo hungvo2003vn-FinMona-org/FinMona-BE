@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, Query } from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { CreateRecordDto } from './dto/create-record.dto';
 import { UpdateRecordDto } from './dto/update-record.dto';
@@ -42,6 +42,23 @@ export class RecordsController {
   @ApiBearerAuth('JWT-auth')
   findAllRecordsByUserId(@Param('id') id: string): Promise<Array<RecordResponseDTO>> {
     return this.recordsService.findAllRecordByUserId(id);
+  }
+
+  @Get(':id/getRecordByDate')
+  findRecordByDate(@Param('id') id: string, @Query('startDate') startDate: string, @Query('endDate') endDate: string): Promise<Array<RecordResponseDTO>> {
+    return this.recordsService.filterRecordsByTime(id, startDate, endDate);
+  }
+
+  @Get(':id/getRecordByCategory')
+  findRecordByCategory(@Param('id') id: string, @Query('categoryName') categoryName: string): Promise<Array<RecordResponseDTO>> {
+    console.log(categoryName);
+    return this.recordsService.filterRecordsByCategory(id, categoryName);
+  }
+
+  @Get(':id/getRecordByMoneySource')
+  findRecordByMoneySource(@Param('id') id: string, @Query('moneySourceName') moneySourceName: string): Promise<Array<RecordResponseDTO>> {
+    console.log(moneySourceName);
+    return this.recordsService.filterRecordsByMoneySource(id, moneySourceName);
   }
 
   @Put(':id')

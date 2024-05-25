@@ -14,9 +14,6 @@ export class Record {
     @Prop({ required: true, type: Boolean })
     isIncome: boolean;
 
-    @Prop({ required: true, type: Boolean })
-    repeat: boolean;
-
     @Prop({ required: true, type: Number })
     amount: number;
 
@@ -31,9 +28,6 @@ export class Record {
 
     @Prop({ type: String })
     description: string;
-
-    @Prop({ type: String })
-    dateRepeat: string;
 
 }
 

@@ -7,6 +7,8 @@ import { RecordDocument } from './entities/record.entity';
 import { TagDocument } from 'src/tags/entities/tag.entity';
 import RecordResponseDTO from './dto/record.response.dto';
 import { UserDocument } from 'src/users/entities/user.entity';
+import * as moment from "moment";
+import { Type } from 'class-transformer';
 
 @Injectable()
 export class RecordsService {
@@ -53,12 +55,10 @@ export class RecordsService {
     try {
       const newRecord = new this.recordModel();
       newRecord.isIncome = requestDTO.isIncome;
-      newRecord.repeat = requestDTO.repeat;
       newRecord.amount = requestDTO.amount;
       newRecord.description = requestDTO.description;
-      newRecord.dateRepeat = requestDTO.dateRepeat;
 
-      newRecord.dateCreated = new Date().toISOString().slice(0, 10);
+      newRecord.dateCreated = moment().format("DD-MM-YYYY").toString();
 
       const category = await this.tagModel.findOne({ title: requestDTO.category, type: "Category" }).exec();
       if (!category) {
@@ -129,6 +129,51 @@ export class RecordsService {
 
       return res;
     } catch (error) {
+      throw new HttpException('Error fetching record', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async filterRecordsByTime(id: string, startDate: string, endDate: string): Promise<Array<RecordResponseDTO>> {
+    try {
+      const userId = new Types.ObjectId(id);
+      const records = await this.recordModel.find({ user: userId }).exec();
+
+      const res = records.filter((record) => (moment(record.dateCreated).isAfter(moment(startDate)) && moment(record.dateCreated).isBefore(endDate)));
+
+      return res.map(RecordResponseDTO.from);
+    } catch(error) {
+      throw new HttpException('Error fetching record', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async filterRecordsByCategory(id: string, categoryName: string): Promise<Array<RecordResponseDTO>> {
+    try {
+      const userId = new Types.ObjectId(id);
+      const categoryId = await this.tagModel.findOne({ title: categoryName, type: 'Category' });
+      // console.log(categoryId);
+      // console.log(categoryName);
+      const records = await this.recordModel.find({ user: userId, category: categoryId._id });
+
+      return records.map(RecordResponseDTO.from);
+      // return [];
+
+    } catch(error) {
+      console.log(error);
+      throw new HttpException('Error fetching record', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  async filterRecordsByMoneySource(id: string, moneySourceName: string): Promise<Array<RecordResponseDTO>> {
+    try {
+      const userId = new Types.ObjectId(id);
+      const categoryId = await this.tagModel.findOne({ title: moneySourceName, type: 'Money Source' });
+      const records = await this.recordModel.find({ user: userId, category: categoryId._id });
+
+      return records.map(RecordResponseDTO.from);
+      return [];
+
+    } catch(error) {
+      console.log(error);
       throw new HttpException('Error fetching record', HttpStatus.BAD_REQUEST);
     }
   }

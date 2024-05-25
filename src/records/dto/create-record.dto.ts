@@ -9,10 +9,6 @@ export class CreateRecordDto {
 
     @ApiProperty()
     @IsNotEmpty({ message: 'Field $property cannot be empty.'})
-    repeat: boolean;
-
-    @ApiProperty()
-    @IsNotEmpty({ message: 'Field $property cannot be empty.'})
     amount: number;
 
     @ApiProperty({ type: String })
@@ -26,9 +22,5 @@ export class CreateRecordDto {
     @ApiProperty({ required: false })
     @IsOptional()
     description: string;
-
-    @ApiProperty({ required: false })
-    @IsOptional()
-    dateRepeat: string;
 
 }

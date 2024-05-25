@@ -7,27 +7,23 @@ export default class RecordResponseDTO {
     constructor(
         public id: string,
         public isIncome: boolean,
-        public repeat: boolean,
         public amount: number,
         public category: any,
         public moneySource: any,
         public dateCreated: string,
         public user: any,
         public description?: string,
-        public dateRepeat?: string,
     ) {}
 
     static from = ({
         _id,
         isIncome,
-        repeat,
         amount,
         category,
         moneySource,
         dateCreated,
         user,
         description,
-        dateRepeat
     }: RecordDocument): RecordResponseDTO => 
-        new RecordResponseDTO(_id.toHexString(), isIncome, repeat, amount, category, moneySource, dateCreated, user, description, dateRepeat);
+        new RecordResponseDTO(_id.toHexString(), isIncome, amount, category, moneySource, dateCreated, user, description);
 }
