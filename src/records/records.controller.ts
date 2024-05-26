@@ -44,13 +44,23 @@ export class RecordsController {
     return this.recordsService.findAllRecordByUserId(id);
   }
 
+  @Get(':id/getRecordByTime')
+  @UseGuards(AuthGuard())
+  @ApiOkResponse({ description: 'successful' })
+  @ApiBadRequestResponse({ description: 'Error fetching record' })
+  @ApiBearerAuth('JWT-auth')
+  findRecordByTime(@Param('id') id: string, @Query('startDate') startDate: string, @Query('endDate') endDate: string): Promise<Array<RecordResponseDTO>> {
+    return this.recordsService.filterRecordsByTime(id, startDate, endDate);
+  }
+
   @Get(':id/getRecordByDate')
   @UseGuards(AuthGuard())
   @ApiOkResponse({ description: 'successful' })
   @ApiBadRequestResponse({ description: 'Error fetching record' })
   @ApiBearerAuth('JWT-auth')
-  findRecordByDate(@Param('id') id: string, @Query('startDate') startDate: string, @Query('endDate') endDate: string): Promise<Array<RecordResponseDTO>> {
-    return this.recordsService.filterRecordsByTime(id, startDate, endDate);
+  findRecordByDate(@Param('id') id:string, @Query('date') date: string): Promise<Array<RecordResponseDTO>> {
+    // console.log(date);
+    return this.recordsService.filterRecordsByDate(id, date);
   }
 
   @Get(':id/getRecordByCategory')
@@ -59,7 +69,7 @@ export class RecordsController {
   @ApiBadRequestResponse({ description: 'Error fetching record' })
   @ApiBearerAuth('JWT-auth')
   findRecordByCategory(@Param('id') id: string, @Query('categoryName') categoryName: string): Promise<Array<RecordResponseDTO>> {
-    console.log(categoryName);
+    // console.log(categoryName);
     return this.recordsService.filterRecordsByCategory(id, categoryName);
   }
 
@@ -69,7 +79,7 @@ export class RecordsController {
   @ApiBadRequestResponse({ description: 'Error fetching record' })
   @ApiBearerAuth('JWT-auth')
   findRecordByMoneySource(@Param('id') id: string, @Query('moneySourceName') moneySourceName: string): Promise<Array<RecordResponseDTO>> {
-    console.log(moneySourceName);
+    // console.log(moneySourceName);
     return this.recordsService.filterRecordsByMoneySource(id, moneySourceName);
   }
 
