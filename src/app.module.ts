@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { RecordsModule } from './records/records.module';
 import { TagsModule } from './tags/tags.module';
 import { TokensModule } from './tokens/tokens.module';
+import { TestMiddleware } from './middleware/test.middleware';
 
 @Module({
   imports: [
@@ -24,4 +25,10 @@ import { TokensModule } from './tokens/tokens.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+// export class AppModule implements NestModule {
+//   configure(consumer: MiddlewareConsumer) {
+//        consumer.apply(TestMiddleware)
+//        .forRoutes('');
+//   }
+// }
+export class AppModule {};
