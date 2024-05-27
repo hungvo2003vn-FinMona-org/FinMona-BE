@@ -188,12 +188,16 @@ export class RecordsService {
   async filterRecordsByCategory(id: string, categoryName: string): Promise<Array<RecordResponseDTO>> {
     try {
       const userId = new Types.ObjectId(id);
-      const categoryId = await this.tagModel.findOne({ title: categoryName, type: 'Category' });
-      // console.log(categoryId);
-      // console.log(categoryName);
-      const records = await this.recordModel.find({ user: userId, category: categoryId._id });
+      const regexText = '_' + categoryName + '$';
+      // console.log(regexText);
+      const categoryObjectDefaultList = await this.tagModel.find({ title: { $regex: regexText }, type: 'Category', isDefault: true });
+      const categoryObjectUserList = await this.tagModel.find({ user: userId, title: { $regex: regexText }, type: 'Category', isDefault: false });
+      const categoryObjectList = categoryObjectDefaultList.concat(categoryObjectUserList);
+      const categoryObjectIdList = categoryObjectList.map((item) => item._id.toString());
 
-      const res = records.map(RecordResponseDTO.from);
+      let records = await this.recordModel.find({ user: userId }).exec();
+
+      let res = records.filter((item) => categoryObjectIdList.includes(item.category._id.toString())).map(RecordResponseDTO.from);
 
       for (var item of res){
         const convertCategory = (await this.tagModel.findById(item.category)).title;
@@ -214,7 +218,10 @@ export class RecordsService {
   async filterRecordsByMoneySource(id: string, moneySourceName: string): Promise<Array<RecordResponseDTO>> {
     try {
       const userId = new Types.ObjectId(id);
-      const categoryId = await this.tagModel.findOne({ title: moneySourceName, type: 'Money Source' });
+      var categoryId = await this.tagModel.findOne({ title: moneySourceName, type: 'Money Source', isDefault: true });
+      if (!categoryId) {
+        categoryId = await this.tagModel.findOne({ user: userId, title: moneySourceName, type: 'Money Source', isDefault: false });
+      }
       // console.log(categoryId);
       // console.log(moneySourceName);
       const records = await this.recordModel.find({ user: userId, moneySource: categoryId._id });

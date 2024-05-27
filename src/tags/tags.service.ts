@@ -18,6 +18,14 @@ export class TagsService {
 
   async addDefaultTag(requestDTO: CreateTagDto): Promise<any> {
     try {
+      const testIfTagHasExist = await this.tagModel.findOne({ isDefault: true, title: requestDTO.title });
+      if (testIfTagHasExist) {
+        throw new HttpException(
+          'Default Tag Name has existed',
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+
       const newTag = new this.tagModel();
       newTag.icon = requestDTO.icon;
       newTag.title = requestDTO.title;
@@ -48,13 +56,22 @@ export class TagsService {
 
   async addUserTag(id: string, requestDTO: CreateTagDto): Promise<any> {
     try {
+      const _userId = new Types.ObjectId(id);
+
+      const testIfTagHasExist = await this.tagModel.findOne({ user: _userId, isDefault: false, title: requestDTO.title });
+      if (testIfTagHasExist) {
+        throw new HttpException(
+          'User Tag Name has existed',
+          HttpStatus.BAD_REQUEST,
+        )
+      }
+
       const newTag = new this.tagModel();
       newTag.icon = requestDTO.icon;
       newTag.title = requestDTO.title;
       newTag.type = requestDTO.type;
 
       newTag.isDefault = false;
-      const _userId = new Types.ObjectId(id);
       const user = await this.userModel.findById(_userId).exec();
       newTag.user = user;
 
