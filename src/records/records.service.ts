@@ -138,8 +138,17 @@ export class RecordsService {
     try {
       const userId = new Types.ObjectId(id);
       const records = await this.recordModel.find({ user: userId, dateCreated: date }).exec();
+      const res = records.map(RecordResponseDTO.from);
 
-      return records.map(RecordResponseDTO.from);
+      for (var item of res){
+        const convertCategory = (await this.tagModel.findById(item.category)).title;
+        const convertMoneySource = (await this.tagModel.findById(item.moneySource)).title;
+
+        item.category = convertCategory;
+        item.moneySource = convertMoneySource;
+      }
+
+      return res;
     } catch (error) {
       throw new HttpException('Error fetching record', HttpStatus.BAD_REQUEST);
     }
@@ -160,7 +169,17 @@ export class RecordsService {
         return ((moment(record.dateCreated, "DD-MM-YYYY").isAfter(_startDate) && moment(record.dateCreated, "DD-MM-YYYY").isBefore(_endDate)) || (record.dateCreated === startDate) || (record.dateCreated === endDate));
       });
 
-      return res.map(RecordResponseDTO.from);
+      const resConvert = res.map(RecordResponseDTO.from);
+
+      for (var item of resConvert ){
+        const convertCategory = (await this.tagModel.findById(item.category)).title;
+        const convertMoneySource = (await this.tagModel.findById(item.moneySource)).title;
+
+        item.category = convertCategory;
+        item.moneySource = convertMoneySource;
+      }
+
+      return resConvert ;
     } catch(error) {
       throw new HttpException('Error fetching record', HttpStatus.BAD_REQUEST);
     }
@@ -174,8 +193,17 @@ export class RecordsService {
       // console.log(categoryName);
       const records = await this.recordModel.find({ user: userId, category: categoryId._id });
 
-      return records.map(RecordResponseDTO.from);
-      // return [];
+      const res = records.map(RecordResponseDTO.from);
+
+      for (var item of res){
+        const convertCategory = (await this.tagModel.findById(item.category)).title;
+        const convertMoneySource = (await this.tagModel.findById(item.moneySource)).title;
+
+        item.category = convertCategory;
+        item.moneySource = convertMoneySource;
+      }
+
+      return res;
 
     } catch(error) {
       console.log(error);
@@ -187,11 +215,21 @@ export class RecordsService {
     try {
       const userId = new Types.ObjectId(id);
       const categoryId = await this.tagModel.findOne({ title: moneySourceName, type: 'Money Source' });
-      console.log(categoryId);
-      console.log(moneySourceName);
+      // console.log(categoryId);
+      // console.log(moneySourceName);
       const records = await this.recordModel.find({ user: userId, moneySource: categoryId._id });
 
-      return records.map(RecordResponseDTO.from);
+      const res = records.map(RecordResponseDTO.from);
+
+      for (var item of res){
+        const convertCategory = (await this.tagModel.findById(item.category)).title;
+        const convertMoneySource = (await this.tagModel.findById(item.moneySource)).title;
+
+        item.category = convertCategory;
+        item.moneySource = convertMoneySource;
+      }
+
+      return res;
 
     } catch(error) {
       console.log(error);

@@ -97,6 +97,16 @@ export class TagsService {
     }
   }
 
+  async findTagByName(id: string, tagName: string, type: string): Promise<TagResponseDTO> {
+    try {
+      const tag = await this.tagModel.findOne({ title: tagName, type: type }).exec();
+
+      return TagResponseDTO.from(tag);
+    } catch (error) {
+      throw new HttpException('Error fetching tags', HttpStatus.BAD_REQUEST);
+    }
+  }
+
   async updateTagById(id: string, requestDTO: UpdateTagDto): Promise<any> {
     try {
       const _id = new Types.ObjectId(id);
