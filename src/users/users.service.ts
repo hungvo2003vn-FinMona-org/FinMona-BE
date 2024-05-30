@@ -10,6 +10,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { TokensService } from 'src/tokens/tokens.service';
 import { CreateTokenDto } from 'src/tokens/dto/create-token.dto';
+const bcrypt = require('bcrypt')
 
 @Injectable()
 export class UsersService {
@@ -25,10 +26,16 @@ export class UsersService {
   async signIn(requestDTO: LoginUserDto): Promise<{ token: string }> {
     const { email, password } = requestDTO;
 
-    const user = await this.userModel.findOne({ email: email, password: password });
+    const user = await this.userModel.findOne({ email: email });
     
     if (!user) {
-      throw new UnauthorizedException("Invalid email or password")
+      throw new UnauthorizedException("Invalid email or password");
+    }
+
+    const resultCheck = await bcrypt.compare(password, user.password)
+
+    if (!resultCheck) {
+      throw new UnauthorizedException("Invalid email or password");
     }
     
     let { token, expiredAt } = await this.tokenService.checkIfUserHasToken(user._id.toString());
@@ -83,13 +90,16 @@ export class UsersService {
       const newUser = new this.userModel();
       newUser.name = requestDTO.name;
       newUser.email = requestDTO.email;
-      newUser.password = requestDTO.password;
+      // hashed password
+      const salt = await bcrypt.genSalt(10);
+      newUser.password = await bcrypt.hash(requestDTO.password, salt);
+      console.log(newUser.password);
+
       if (!(requestDTO.avatar === undefined)) {
         newUser.avatar = requestDTO.avatar;
       } else {
         newUser.avatar = "default";
       }
-
 
       const user = await newUser.save();
       return {
@@ -98,6 +108,7 @@ export class UsersService {
       };
 
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         'Error while creating new user',
         HttpStatus.BAD_REQUEST,
