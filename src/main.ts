@@ -9,7 +9,9 @@ import { CreateRecordDto } from './records/dto/create-record.dto';
 import { CreateTagDto } from './tags/dto/create-tag.dto';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: false
+  });
 
   const config = new DocumentBuilder()
   .setTitle('Test Swagger')
