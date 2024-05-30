@@ -99,7 +99,9 @@ export class RecordsService {
   async findAllRecord(): Promise<Array<RecordResponseDTO>> {
     try {
       const records = await this.recordModel.find().exec();
+      console.log(records);
       const res = records.map(RecordResponseDTO.from);
+      console.log(res);
       for (var item of res){
         const convertCategory = (await this.tagModel.findById(item.category)).title;
         const convertMoneySource = (await this.tagModel.findById(item.moneySource)).title;
@@ -262,8 +264,8 @@ export class RecordsService {
           HttpStatus.BAD_REQUEST,
         )
       }
-      requestDTO.category = category;
-      requestDTO.moneySource = moneySource;
+      requestDTO.category = category._id;
+      requestDTO.moneySource = moneySource._id;
 
       const updateRecord = await this.recordModel.findByIdAndUpdate(userId, requestDTO).exec();
       
